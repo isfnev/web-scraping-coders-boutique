@@ -1,11 +1,12 @@
 import requests
 import csv
+import os
 import concurrent.futures
 from bs4 import BeautifulSoup
 
 def return_link_carat_weight(soup):
     base_url = 'https://keyzarjewelry.com'
-    return [ base_url+a_tag.get('href') for a_tag in soup.find('div', class_='flex flex-wrap gap-2 md:max-w-[350px]').find_all('a')]
+    return [base_url+a_tag.get('href') for a_tag in soup.find('div', class_='flex flex-wrap gap-2 md:max-w-[350px]').find_all('a')]
 
 def return_link_center_stone_shape(soup):
     base_url = 'https://keyzarjewelry.com'
@@ -37,91 +38,81 @@ def return_link_carat_material(soup):
     for i in link_carat_material:
         yield i
 
-def return_url():
-    with open('textfiles/scraping_keyzar.txt') as file:
-        # return file.readline().strip()
-        return [line.strip() for line in file]
+def return_chunk_index():
+    chunk_index = 0
+    while chunk_index != 326:
+        filename = f'textfiles/chunk_index={chunk_index}.csv'
+        if os.path.exists(filename):
+            with open(filename, 'r') as file:
+                line_count = sum(1 for _ in file)
+                if line_count == 100:
+                    chunk_index += 1
+                else:
+                    break
+        else:
+            break
+    
+    return chunk_index
 
-def for_first_loop(link_weight):
+def return_url_in_chunks():
+    with open('textfiles/urls in urls.txt') as file:
+        data = [line.strip() for line in file]
+    
+    chunk_index = return_chunk_index()
+
+    for i in range(0, len(data), 100):
+        yield data[i:i+100], chunk_index
+        chunk_index += 1
+
+def give_url(link_info):
+    link, chunk_index = link_info
     headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,                  like Gecko) Chrome/85.0.4183.83 Safari/537.36'
-}
-    r = requests.get(link_weight, headers=headers)
-    soup = BeautifulSoup(r.content, 'lxml')
-
-    for link_shape in return_link_center_stone_shape(soup):
-        headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,                  like Gecko) Chrome/85.0.4183.83 Safari/537.36'
-}
-        r = requests.get(link_shape, headers=headers)
-        soup = BeautifulSoup(r.content, 'lxml')
-
-        for link_material in return_link_carat_material(soup):
-            headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,                  like Gecko) Chrome/85.0.4183.83 Safari/537.36'
-}
-            r = requests.get(link_material, headers=headers)
-            soup = BeautifulSoup(r.content, 'lxml')
-            if r.status_code == 200:
-                soup = BeautifulSoup(r.content, 'lxml')
-                title = soup.h1.string
-                description = soup.find_all(style="font-weight: 400;")[1].string
-                photo_tags = soup.find('div', class_='cpts-desktop-content hidden lg:grid lg:grid-cols-1 lg:gap-2 xl:grid-cols-2 lg:auto-rows-fr').find_all('img')
-                photo_link = [img_tag.get('src') for img_tag in photo_tags]
-                price_tag = soup.find_all(class_='tangiblee-price text-lg leading-none text-black font-semibold md:text-1.5xl')
-                price = price_tag[0].string
-                know_your_setting_tags = soup.find_all(class_=['StoneDetailBlock__content-value'])
-                width = know_your_setting_tags[0].string
-                approx = know_your_setting_tags[1].string
-                metal = know_your_setting_tags[2].string
-                metals_tags = soup.find_all(class_="SettingDetailBlock__graph-text flex items-center gap-2")
-                gold = metals_tags[0].get_text()
-                copper = metals_tags[1].get_text()
-                zinc = metals_tags[2].get_text()
-                nickle = metals_tags[3].get_text() if len(metals_tags) > 3 else ''
-                color_accent_tags = know_your_setting_tags[3].p.string
-                clarity_accent_tags = know_your_setting_tags[4].p.string
-                profile = know_your_setting_tags[5].p.string
-                know_your_stone_tags = know_your_setting_tags
-                carat = know_your_stone_tags[6].string
-                color = know_your_stone_tags[7].string
-                clarity = know_your_stone_tags[8].string
-                carat_features = soup.find_all(class_='inline text-customGray-500 font-normal ml-1')
-                carat_weight = carat_features[0].string
-                center_stone_shape = carat_features[1].string
-                carat_material = carat_features[2].stri
-                with open('textfiles/extracted_version_2.csv','a',newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([title, price, description, carat_weight, center_stone_shape, carat_material, photo_link, width, approx, metal, gold, copper, zinc, nickle, color_accent_tags, clarity_accent_tags, profile, carat, color, clarity,link_material
-                ])
-                print('.', end='')
-            else:
-                print("Failed to extract content from the url :", link_material)
-
-def give_url(url):
-    headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'
-}
-    r = requests.get(url,headers=headers)
-
+    }
+    r = requests.get(link, headers=headers)
+    soup = BeautifulSoup(r.content, 'lxml')
     if r.status_code == 200:
-
         soup = BeautifulSoup(r.content, 'lxml')
+        title = soup.h1.string
+        description = soup.find_all(style="font-weight: 400;")[1].string
+        photo_tags = soup.find('div', class_='cpts-desktop-content hidden lg:grid lg:grid-cols-1 lg:gap-2 xl:grid-cols-2 lg:auto-rows-fr').find_all('img')
+        photo_link = [img_tag.get('src') for img_tag in photo_tags]
+        price_tag = soup.find_all(class_='tangiblee-price text-lg leading-none text-black font-semibold md:text-1.5xl')
+        price = price_tag[0].string
+        know_your_setting_tags = soup.find_all(class_=['StoneDetailBlock__content-value'])
+        width = know_your_setting_tags[0].string
+        approx = know_your_setting_tags[1].string
+        metal = know_your_setting_tags[2].string
+        metals_tags = soup.find_all(class_="SettingDetailBlock__graph-text flex items-center gap-2")
+        gold = metals_tags[0].get_text()
+        copper = metals_tags[1].get_text()
+        zinc = metals_tags[2].get_text()
+        nickle = metals_tags[3].get_text() if len(metals_tags) > 3 else ''
+        color_accent_tags = know_your_setting_tags[3].p.string
+        clarity_accent_tags = know_your_setting_tags[4].p.string
+        profile = know_your_setting_tags[5].p.string
+        know_your_stone_tags = know_your_setting_tags
+        carat = know_your_stone_tags[6].string
+        color = know_your_stone_tags[7].string
+        clarity = know_your_stone_tags[8].string
+        carat_features = soup.find_all(class_='inline text-customGray-500 font-normal ml-1')
+        carat_weight = carat_features[0].string
+        center_stone_shape = carat_features[1].string
+        carat_material = carat_features[2].string
 
-        link_carat_weight = return_link_carat_weight(soup)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            executor.map(for_first_loop, link_carat_weight)
-        
+        with open(f'textfiles/chunk_index={chunk_index}.csv','a',newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow([title, price, description, carat_weight, center_stone_shape, carat_material, photo_link, width, approx, metal, gold, copper, zinc, nickle, color_accent_tags, clarity_accent_tags, profile, carat, color, clarity,link
+        ])
+        print('.', end='')
     else:
-        print("Failed to extract content from the url :", url)
+        print("Failed to extract content from the url :", link)
 
 if __name__=='__main__':
-    urls = return_url()
-    print('Web scraping data', end='')
-    with open('textfiles/extracted_version_2.csv','a',newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['title', 'price', 'description', 'carat_weight', 'center_stone_shape', 'carat_material', 'photo_link', 'width', 'approx', 'metal', 'gold', 'copper', 'zinc', 'nickle', 'color_accent_tags', 'clarity_accent_tags', 'profile', 'carat', 'color', 'clarity','Url'
-    ])
+    print("Extracting", end='')
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=10) as executor:
-        executor.map(give_url, urls)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        # for a_chunk in return_url_in_chunks():
+            chunk_url, chunk_index = return_url_in_chunks()
+            chunk_info = [(url, chunk_index) for url in chunk_url]
+            executor.map(give_url, chunk_info)
