@@ -15,13 +15,15 @@ def get_product_info(url):
             base_url = 'https://weighing.andonline.com'
 
             max_length = 0
-
-            list_title = [] 
+            
+            list_title = []
             list_title.append(soup.find(class_='field field--title').text)
-
+            
             heading_tag = soup.find(class_='heading-5')
-            heading_tag.find_all('p')[-1].decompose()
-
+            if heading_tag.find('p'):
+                heading_tag.find_all('p')[-1].decompose()
+        
+            
             list_of_content = []
             for p in heading_tag.find_all('p'):
                 list_of_content.append(p.text.strip())
@@ -29,40 +31,81 @@ def get_product_info(url):
                 for li in ul.find_all('li'):
                     list_of_content.append(li.text.replace('\xa0',''))
             max_length = max( max_length, len(list_of_content))
-            
-            list_of_key_features = set()
-            for div in soup.find('div', class_='grid grid--small-2 grid--medium-3').find_all('div'):
-                list_of_key_features.add(div.text.strip())
-            list_of_key_features = list(list_of_key_features)
-            max_length = max( max_length, len(list_of_key_features))
 
+            try:
+                list_of_key_features = set()
+            except Exception as e:
+                print("Block 3-1 :", e)
+            try:
+                temp = soup.find('div', class_='grid grid--small-2 grid--medium-3')
+            except Exception as e:
+                print("Block 3-2 :", e)
+            try:
+                if temp != None:
+                    temp2 = temp.find_all('div')
+            
+                    if temp2:
+                        for div in temp2:
+                            list_of_key_features.add(div.text.strip())
+            except Exception as e:
+                print("Block 3-4 :", e)
+            try:        
+                list_of_key_features = list(list_of_key_features)
+            except Exception as e:
+                print("Block 3-5 :", e)
+            try:
+                max_length = max( max_length, len(list_of_key_features))
+            except Exception as e:
+                print("Block 3-6 :", e)
+            
             list_of_feature = []
-            for tag in soup.find_all('div', class_='text-long')[1].children:
+            
+            temp2 = soup.find_all('div', class_='text-long')
+            if len(temp2) >= 2:
+                temp = temp2[1]
+
+            for tag in temp.children :
                 if tag.name == 'p':
-                    list_of_feature.append(tag.text)
+                    list_of_feature.append(tag.get_text().strip())
                 elif tag.name == 'ul':
                     for li in tag.find_all('li'):
                         list_of_feature.append(li.text)
             max_length = max( max_length, len(list_of_feature))
 
-            specification_1 = []
-            specification_2 = []
-            for tr in soup.find('tbody').find_all('tr'):
-                tds = tr.find_all('td')
-                specification_1.append(tds[0].text)
-                specification_2.append(tds[1].text)
-            max_length = max( max_length, len(specification_1))
-            max_length = max( max_length, len(specification_2))
-            
-            if len(soup.find_all('tbody')) > 1:
+            try:
+                specification_1 = []
+                specification_2 = []
+                
+                if soup.find('tbody'):
+                    for tr in soup.find('tbody').find_all('tr'):
+                        tds = tr.find_all('td')
+                        specification_1.append(tds[0].text)
+                        specification_2.append(tds[1].text)
+                else:
+                    specification_1.append('')
+                    specification_2.append('')
+
+                max_length = max( max_length, len(specification_1))
+                max_length = max( max_length, len(specification_2))
+            except Exception as e:
+                print("Block 5 :", e)
+            try:
                 accessories_1 = []
                 accessories_2 = []
-                for tr in soup.find_all('tbody')[1].find_all('tr'):
-                    tds = tr.find_all('td')
-                    accessories_1.append(tds[0].text)
-                    accessories_2.append(tds[1].text)
-            max_length = max( max_length, len(accessories_1))
-            max_length = max( max_length, len(accessories_2))
+                if len(soup.find_all('tbody')) > 1:
+                    temp = soup.find_all('tbody')
+
+                    for tr in temp[1].find_all('tr'):
+                        tds = tr.find_all('td')
+                        accessories_1.append(tds[0].text)
+                        accessories_2.append(tds[1].text)
+                if len(accessories_1) == 0:
+                    accessories_1.append('')
+                    accessories_2.append('')
+                max_length = max( max_length, len(accessories_1))
+                max_length = max( max_length, len(accessories_2))
+            except Exception as e:
+                print("Block 6 :", e)
             
             download_tags = soup.find_all('span', class_='file file--mime-application-pdf file--application-pdf')
             n = len(download_tags)//2
@@ -73,7 +116,8 @@ def get_product_info(url):
                 download_col2.append(download_tags[i].find('a').get('href'))
             max_length = max( max_length, len(download_col1))
             max_length = max( max_length, len(download_col2))
-
+        
+            
             # photos
             images_link_list = []
             image_div_tags = soup.find_all('div', class_='field field--field-image-file')
@@ -81,22 +125,25 @@ def get_product_info(url):
             for i in range(n):
                 images_link_list.append(base_url+image_div_tags[i].find('img').get('src'))
             max_length = max( max_length, len(images_link_list))
-
-            make_len_equal(list_title, max_length)
-            make_len_equal(list_of_content, max_length)
-            make_len_equal(list_of_key_features, max_length)
-            make_len_equal(list_of_feature, max_length)
-            make_len_equal(specification_1, max_length)
-            make_len_equal(specification_2, max_length)
-            make_len_equal(accessories_1, max_length)
-            make_len_equal(accessories_2, max_length)
-            make_len_equal(download_col1, max_length)
-            make_len_equal(download_col2, max_length)
-            make_len_equal(images_link_list, max_length)
-            Url = []
-            Url.append(url)
-            make_len_equal(Url, max_length)
-
+            
+            try:
+                make_len_equal(list_title, max_length)
+                make_len_equal(list_of_content, max_length)
+                make_len_equal(list_of_key_features, max_length)
+                make_len_equal(list_of_feature, max_length)
+                make_len_equal(specification_1, max_length)
+                make_len_equal(specification_2, max_length)
+                make_len_equal(accessories_1, max_length)
+                make_len_equal(accessories_2, max_length)
+                make_len_equal(download_col1, max_length)
+                make_len_equal(download_col2, max_length)
+                make_len_equal(images_link_list, max_length)
+                Url = []
+                Url.append(url)
+                make_len_equal(Url, max_length)
+            except Exception as e:
+                print("Block 9 :", e)
+            
             df = pd.DataFrame({
                 'title':list_title,
                 'content':list_of_content,
@@ -123,6 +170,7 @@ def get_product_info(url):
             # print(download_col1)
             # print(download_col2)
             # print(images_link_list)
+            
             return df
         else:
             print("Failed", url, "with error code :", r.status_code)
@@ -130,7 +178,7 @@ def get_product_info(url):
                 file.write(url+'\n')
     except Exception as e:
         print(e)
-        with open('Scrap_A and D/textfiles/get_product_info_exception.txt', 'a') as file:
+        with open('Scrap_A and D/textfiles/get_product_info_exception2.txt', 'a') as file:
             file.write(url+'\n')
 
 def process_task(ten_urls):
@@ -141,19 +189,15 @@ def process_task(ten_urls):
             df = pd.concat([df, new_df])
     return df
 
-# url = 'https://weighing.andonline.com/product/ht-series-scales/ht-3000?commerce_product=32'
-# url = 'https://weighing.andonline.com/product/newton-ej-series-portable-balances/ej-4100?commerce_product=12'
-# url = 'https://weighing.andonline.com/product/pv-series-pocket-scale/pv-200?commerce_product=38'
-# url = 'https://weighing.andonline.com/product/hl-i-ninja-series-scales/hl-200i?commerce_product=28'
+# url = 'https://weighing.andonline.com/product/borealis-ba-series-semi-microbalances/ba-225te?commerce_product=96'
 # get_product_info(url)
 
-
 # with ThreadPoolExecutor(max_workers=8) as executor:
-    # executor.submit(get_product_info, url)
+#     executor.submit(get_product_info, url)
 #     executor.map(get_product_info, url)
 
 if __name__=='__main__':
-    with open('Scrap_A and D/textfiles/get_product_link.txt') as file:
+    with open('Scrap_A and D/textfiles/get_product_info_exception.txt') as file:
         urls = [line.strip() for line in file]
 
     data = [urls[i:i+10] for i in range(0, len(urls), 10)]
