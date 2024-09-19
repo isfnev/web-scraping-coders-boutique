@@ -8,7 +8,7 @@ def get_dynamic_html():
         page.set_default_timeout(120000)
         page.goto('https://keyzarjewelry.com/collections/engagement-ring-settings', timeout=120000)
         page.click('#onetrust-accept-btn-handler')
-        
+
         for _ in range(4):
             page.click('button:has-text("Load More")')
 

@@ -1,3 +1,9 @@
 .venv/
 __pycache__/
 /textfiles/
+index.html
+css/
+bootstrap/
+js/
+icons/
+rs-plugins/
