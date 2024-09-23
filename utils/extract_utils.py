@@ -1,9 +1,9 @@
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 
-def single_test(func, df_store_path, urls_path):
+def single_test(func, df_store_path, urls_path, link_index = 0):
     urls = get_urls(urls_path)
-    df = func(urls[1])
+    df = func(urls[link_index])
     # if df != None:
     if not df.empty:
         df.to_csv(df_store_path, index=False)
@@ -21,4 +21,3 @@ def return_df_multiple_test(func, df_store_path, urls_path):
         for new_df in result:
             df = pd.concat([df, new_df])
     df.to_csv(df_store_path, index=False)
-print(__name__)

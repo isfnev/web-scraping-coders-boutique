@@ -1,0 +1,21 @@
+import requests
+
+headers = {
+    'accept': '*/*',
+    'accept-language': 'en-US,en;q=0.9,en-IN;q=0.8',
+    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+    'origin': 'https://www.scalesplus.com',
+    'priority': 'u=1, i',
+    'referer': 'https://www.scalesplus.com/',
+    'sec-ch-ua': '"Microsoft Edge";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Linux"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'cross-site',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36 Edg/129.0.0.0',
+}
+
+data = 'old_filter=old_filter%3D%26filter%255BPrice%255D%255Bmin%255D%3D10%26filter%255BPrice%255D%255Bmax%255D%3D9985%26filter%255BBrand%255D%255B%255D%3D44%26filter%255BBrand%255D%255B%255D%3D40%26filter%255BBrand%255D%255B%255D%3D38%26filter%255BBrand%255D%255B%255D%3D41%26filter%255BCapacity_BO_g_BC__CF%255D%255Bname%255D%3DCapacity%2520(g)%26filter%255BCapacity_BO_g_BC__CF%255D%255Bdbname%255D%3DCapacity%2520(g)%26filter%255BCapacity_BO_g_BC__CF%255D%255Bmin%255D%3D52%26filter%255BCapacity_BO_g_BC__CF%255D%255Bmax%255D%3D35000%26filter%255BCapacity_BO_lb_BC__CF%255D%255Bname%255D%3DCapacity%2520(lb)%26filter%255BCapacity_BO_lb_BC__CF%255D%255Bdbname%255D%3DCapacity%2520(lb)%26filter%255BCapacity_BO_lb_BC__CF%255D%255Bmin%255D%3D5%26filter%255BCapacity_BO_lb_BC__CF%255D%255Bmax%255D%3D1200%26filter%255BCapacity_BO_kg_BC__CF%255D%255Bname%255D%3DCapacity%2520(kg)%26filter%255BCapacity_BO_kg_BC__CF%255D%255Bdbname%255D%3DCapacity%2520(kg)%26filter%255BCapacity_BO_kg_BC__CF%255D%255Bmin%255D%3D8%26filter%255BCapacity_BO_kg_BC__CF%255D%255Bmax%255D%3D100%26id%3D594%26site%3Derrhy7umuu%26currency%3D%26customer_group%3D%26filter_type%3Dcategory%26searchQuery%3Dundefined%26bulkQty%3Dundefined%26sort_order%3Dpriceasc%26searched_text%3D%26channel_id%3D1%26staff_cookie%3D&filter%5BPrice%5D%5Bmin%5D=58.2&filter%5BPrice%5D%5Bmax%5D=9984.1&filter%5BBrand%5D%5B%5D=44&filter%5BBrand%5D%5B%5D=40&filter%5BBrand%5D%5B%5D=38&filter%5BBrand%5D%5B%5D=41&filter%5BCapacity_BO_g_BC__CF%5D%5Bname%5D=Capacity+(g)&filter%5BCapacity_BO_g_BC__CF%5D%5Bdbname%5D=Capacity+(g)&filter%5BCapacity_BO_g_BC__CF%5D%5Bmin%5D=64&filter%5BCapacity_BO_g_BC__CF%5D%5Bmax%5D=35000&filter%5BCapacity_BO_lb_BC__CF%5D%5Bname%5D=Capacity+(lb)&filter%5BCapacity_BO_lb_BC__CF%5D%5Bdbname%5D=Capacity+(lb)&filter%5BCapacity_BO_lb_BC__CF%5D%5Bmin%5D=5&filter%5BCapacity_BO_lb_BC__CF%5D%5Bmax%5D=1200&filter%5BCapacity_BO_kg_BC__CF%5D%5Bname%5D=Capacity+(kg)&filter%5BCapacity_BO_kg_BC__CF%5D%5Bdbname%5D=Capacity+(kg)&filter%5BCapacity_BO_kg_BC__CF%5D%5Bmin%5D=12&filter%5BCapacity_BO_kg_BC__CF%5D%5Bmax%5D=31&filterProducts=724,725,546,941,942,8806,8808,8807,11705,11706,11707,3488,3493,3489,8781,3490,3481,8809,12283,12710,12706,12708,12709,117,7203,7204,125,128,122,118,1147,1146,1491,12925,12926,12927,1495,628,1492,1496,631,625,120,626,123,629,12928,12929,7205,12866,12867,12868,1479,121,1493,632,627,12911,12912,12914,3685,126,12903,12904,12905,633,119,634,12869,12870,245,127,12915,12916,12930,12931,12871,12872,12906,12933,206,246,12917,12918,124,12907,12908,12923,12924,247,12909,12910,1170,1173,1171,1172,2790,1174,1175,13030,13031,13032,13023,13024,13025,2787,2786,2788,7683,13033,13034,2783,3806,13026,13027,2791,7680,7681,8795,13035,13036,13028,13029,2784,2789,8796,7682,239,340,8907,8915,240,2785,341,343,316,11885,11893,202,216,217,218,219,11884,11890,318,342,317,15627,15622,315,11883,11889,367,15560,374,11966,11892,220,11962,11972,364,368,11965,221,11967,372,11891,365,11970,369,373,311,360,11969,12073,370,366,375,12074,376,11968,11973,222,344,347,363,345,377,348,11975,371,359,223,353,346,378,667,349,351,11976,354,352,666,671,670,668&pageNo=3&site=errhy7umuu&id=594&currency=&customer_group=&sort_order=priceasc&channel_id=1&type=after&staff_cookie='
+
+response = requests.post('https://filter.freshclick.co.uk//Category_filter/setFilterProducts', headers=headers, data=data)
