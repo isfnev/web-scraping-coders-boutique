@@ -11,8 +11,8 @@ from utils.time_it import time_it
 
 @time_it
 def give_url(url, j):
-        print('start extract url', j)
-    # try:
+    print('start extract url', j)
+    try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
@@ -74,6 +74,7 @@ def give_url(url, j):
                     for idx, tag in enumerate(player, 1):
                         dict[f'Product video {idx}'] = youtube_prefix+tag.a.get('data-video-id')
                 # print(dict['description paragraph'])
+                del youtube_prefix
                 dict['warranty information'] = soup.find(id='tab-warranty').string.strip()
                 product_review = soup.find(id='tab-specs').find('dl').find_all(True)
                 for i in range(0, len(product_review), 2):
@@ -94,16 +95,16 @@ def give_url(url, j):
             with open('scalesplus/textfiles/discontinued1.txt','a') as f:
                 f.write(url+'\n')
             return {}
-    # except Exception as e:
-    #     print(e,":",url)
-    #     with open('scalesplus/textfiles/exception2.txt','a') as f:
-    #         f.write(url+'\n')
-    #     return {}
+    except Exception as e:
+        print(e,":",url)
+        with open('scalesplus/textfiles/exception1.txt','a') as f:
+            f.write(url+'\n')
+        return {}
 
 @time_it
 def main()->None:
-    # urls_path:str = 'scalesplus/textfiles/product links food.txt'
-    urls_path:str = 'scalesplus/textfiles/exception1.txt'
+    urls_path:str = 'scalesplus/textfiles/product links NTEP.txt'
+    # urls_path:str = 'scalesplus/textfiles/exception1.txt'
     df_store_path:str = 'scalesplus/textfiles/output1.csv'
     # link_index = 0
     return_df_multiple_test(give_url, df_store_path, urls_path)
