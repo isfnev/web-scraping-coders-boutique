@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+import json
 
 import sys
 sys.path.append('/home/abhishek/Desktop/web-scraping-coders-boutique')
@@ -10,19 +10,15 @@ from utils.extract_utils import return_df_multiple_test
 from utils.time_it import time_it
 
 @time_it
-def give_url(url, j):
+def give_url(url, j, session, json_file_path, discontinued_path, exception_path, failed_file_path):
     print('start extract url', j)
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, timeout=300000)
-            dict = {}
-            soup:BeautifulSoup = BeautifulSoup(page.content(), 'lxml')
-            page.close()
-            browser.close()
+        r = session.get(url)
+        if r.status_code == 200:
+            soup:BeautifulSoup = BeautifulSoup( r.content, 'lxml')
 
-            if soup.find(class_='productView-price').text != 'Discontinued':
+            if soup.find(class_='productView-price').text.strip() != 'Discontinued':
+                dict = {}
 
                 dict['title'] = soup.find(class_='productView-title').string
 
@@ -81,33 +77,35 @@ def give_url(url, j):
                     dict['Specification '+product_review[i].string[:-1].strip()] = product_review[i+1].string
 
                 dict['URL'] = url
-                base_url = 'https://www.scalesplus.com'
-                for idx, tag in enumerate(soup.select('.col-md-4.col-sm-6'), 1):
-                    a:BeautifulSoup = tag.a
-                    dict[f'accessories link {idx}'] = base_url+a.get('href')
-                    dict[f'accessories image {idx}'] = a.img.get('src')
-                    dict[f'accessories title {idx}'] = tag.h3.text
-                    dict[f'accessories price {idx}'] = tag.h3.next_sibling.text
-                del base_url
                 print("Done extracting url", j)
 
-                return dict
-            with open('scalesplus/textfiles/discontinued1.txt','a') as f:
+                with open(json_file_path,'w') as f:
+                    json.dump(dict, f)
+                    f.write('\n')
+            else:
+                with open( discontinued_path,'a') as f:
+                    f.write(url+'\n')
+        else:
+            with open(failed_file_path, 'a') as f:
                 f.write(url+'\n')
-            return {}
     except Exception as e:
         print(e,":",url)
-        with open('scalesplus/textfiles/exception1.txt','a') as f:
+        with open(exception_path,'a') as f:
             f.write(url+'\n')
         return {}
 
 @time_it
 def main()->None:
-    urls_path:str = 'scalesplus/textfiles/product links NTEP.txt'
-    # urls_path:str = 'scalesplus/textfiles/exception1.txt'
-    df_store_path:str = 'scalesplus/textfiles/output1.csv'
-    # link_index = 0
-    return_df_multiple_test(give_url, df_store_path, urls_path)
+    category_name = 'balances'
+    save_csv_path = f'scalesplus/csv_files/output_{category_name}.csv'
+    json_file_path = f'scalesplus/json/output_{category_name}.json'
+    failed_file_path = f'scalesplus/failed_file_path/output_{category_name}.txt'
+    urls_path:str = f'scalesplus/product links/product links {category_name.capitalize()}.txt'
+    discontinued_path = f'scalesplus/discontinued/discontinued_{category_name}.txt'
+    exception_path = f'scalesplus/exception/exception_{category_name}.txt'
+
+    return_df_multiple_test(give_url, urls_path, json_file_path, discontinued_path, exception_path, failed_file_path)
+    json_file_path(json_file_path, save_csv_path)
 
 if __name__=='__main__':
     main()

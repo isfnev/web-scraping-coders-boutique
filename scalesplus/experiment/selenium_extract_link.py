@@ -13,7 +13,7 @@ edge_options.binary_location = "/usr/bin/microsoft-edge-stable"
 base_url = 'https://www.scalesplus.com'
 
 driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=edge_options)
-url = 'https://www.scalesplus.com/ntep-certified-scales/?Brand=A_AMP_D__Weighing||Adam__Equipment||OHAUS||Rice__Lake__Weighing__Systems'
+url = 'https://www.scalesplus.com/ntep-balances/?Brand=A_AMP_D__Weighing||Adam__Equipment||OHAUS||Rice__Lake__Weighing__Systems'
 
 driver.get(url)
 
@@ -21,10 +21,10 @@ driver.get(url)
 #     time.sleep(2)
 bottom = driver.find_element(By.CSS_SELECTOR, 'body > footer > div:nth-child(2)')
 ActionChains(driver).scroll_to_element(bottom).perform()
-time.sleep(100)
+time.sleep(10)
 
 soup = BeautifulSoup(driver.page_source, 'lxml')
-with open('scalesplus/textfiles/product links NTEP.txt', 'w') as f:
+with open('scalesplus/textfiles/product links Balances.txt', 'w') as f:
     for tag in soup.select('.productGrid>.product'):
         f.write(base_url + tag.a.get('href') + '\n')
 
