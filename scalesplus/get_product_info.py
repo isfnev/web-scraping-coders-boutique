@@ -2,21 +2,24 @@ from bs4 import BeautifulSoup
 import json
 import asyncio
 import sys
+import re
 import aiofiles
 sys.path.append('/home/abhishek/Desktop/web-scraping-coders-boutique')
-
+semaphore = asyncio.Semaphore(10)
 # from utils.extract_utils import single_test
 from utils.extract_utils import return_df_multiple_test
 # from utils.extract_utils import return_df_async_test
 from utils.time_it import time_it
+import time
 from utils.json_to_csv import json_to_csv
 
 @time_it
 async def give_url(url, j, browser, json_file_path, discontinued_path, exception_path, failed_file_path, categories_checker):
+    try:
+        async with semaphore:
             print('start extract url', j)
-    # try:
             page = await browser.new_page()
-            await page.goto(url)
+            await page.goto(url, timeout=3600000)
             soup:BeautifulSoup = BeautifulSoup(await page.content(), 'lxml')
             await page.close()
 
@@ -110,20 +113,19 @@ async def give_url(url, j, browser, json_file_path, discontinued_path, exception
                 for i in Keys:
                     print(i)
 
-                async with aiofiles.open(json_file_path, mode='w') as f:
+                async with aiofiles.open(json_file_path, mode='a') as f:
                     dump = json.dumps(dict)
-                    await f.write(dump)
+                    await f.write(dump+'\n')
             else:
-                async with aiofiles.open( discontinued_path, mode ='a') as f:
-                    await f.write(url)
-    # except Exception as e:
-    #     print(e,":",url)
-    #     with open(exception_path,'a') as f:
-    #         f.write(url+'\n')
+                async with aiofiles.open(discontinued_path, mode ='a') as f:
+                    await f.write(url+'\n')
+    except Exception as e:
+        print(e,":",url)
+        async with aiofiles.open(exception_path,'a') as f:
+            await f.write(url+'\n')
 
 @time_it
 async def main(category_name=None)->None:
-    category_name = 'single_url'
     save_csv_path = f'scalesplus/csv_file/output_{category_name}.csv'
     json_file_path = f'scalesplus/json/output_{category_name}.json'
     failed_file_path = f'scalesplus/failed_file_path/failed_{category_name}.txt'
@@ -135,4 +137,4 @@ async def main(category_name=None)->None:
     json_to_csv(json_file_path, save_csv_path)
 
 if __name__=='__main__':
-    asyncio.run(main())
+    asyncio.run(main('cultivation_scales'))
